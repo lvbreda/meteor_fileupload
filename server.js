@@ -1,18 +1,16 @@
 var connect = __meteor_bootstrap__.require("connect");
-var Collection = new Meteor.Collection('collection');
+var fs = __meteor_bootstrap__.require('fs');
+var mime = __meteor_bootstrap__.require('mime');
 __meteor_bootstrap__.app
     .use(connect.query())
+   	.use(connect.bodyParser())
     .use(function (req, res, next) {
-      // Need to create a Fiber since we're using synchronous http calls
       Fiber(function() {
-      	
       	 if(req.method == "POST"){
-      	 	Mongo = new Meteor._Mongo(__meteor_bootstrap__.mongo_url);
-      	 	if(_.indexOf(['/posturl'], req.url) !== -1){
-      	 		 //Post action
-      	 		 Mongo.insert("collection",{name:"lander"});
-      	 		 res.writeHead(200, {'Content-Type': 'text/html'});	
-		         res.write("Hi");
+      	 	if(req.url.indexOf('/upload') !== -1){
+      	 		 fs.rename(req.files.qqfile.path, 'public' + req.files.qqfile.path.replace('/tmp/',''));
+      	 		 res.writeHead(200, {'Content-Type': 'text/plain'});	
+		         res.write(JSON.stringify({"success" : true, "path" : '/home/vagrant/upload/public/' + req.files.qqfile.path.replace('/tmp/','')}));
 		         res.end();
 		         return;
       	 	}
@@ -20,3 +18,4 @@ __meteor_bootstrap__.app
       	next();
     }).run();
 });
+
